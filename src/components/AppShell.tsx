@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import { Avatar } from "./Avatar";
 import { Icon } from "./Icon";
-
+import {Link} from 'react-router'
 const navigation = [
   ["⌂", "Home"], ["⌕", "Explore"], ["◉", "Reels"], ["✉", "Messages"], ["♡", "Notifications"], ["▣", "Saved"],
 ];
@@ -23,7 +23,16 @@ export function AppShell({ children, active = "Home" }: { children: ReactNode; a
         <div className="mt-auto flex items-center gap-3 rounded-2xl bg-white p-3 shadow-sm"><Avatar name="Maya" image="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=120&q=80" size="sm" /><div><p className="text-sm font-bold">Maya Morris</p><p className="text-xs text-slate-400">@mayamakes</p></div><span className="ml-auto text-slate-400">•••</span></div>
       </aside>
       <main className="mx-auto max-w-7xl px-4 py-5 lg:ml-64 lg:px-8 lg:py-8">{children}</main>
-      <nav className="fixed inset-x-3 bottom-3 z-30 flex justify-around rounded-2xl border border-white/70 bg-white/85 p-2 shadow-xl backdrop-blur-lg lg:hidden">{[["⌂", "Home"], ["⌕", "Explore"], ["＋", "Create"], ["♡", "Likes"], ["◉", "Profile"]].map(([icon, label]) => <button key={label} className="grid place-items-center gap-0.5 rounded-xl px-3 py-1 text-xs font-medium text-slate-500"><span className="text-lg">{icon}</span>{label}</button>)}</nav>
+      <nav className="fixed inset-x-3 bottom-3 z-30 flex justify-around rounded-2xl border border-white/70 bg-white/85 p-2 shadow-xl backdrop-blur-lg lg:hidden">{navButtons?.map(([icon, label, path]) => <NavButton key={label} icon={icon} label={label} to={path} active={active} />)}</nav>
     </div>
   );
+}
+
+const navButtons:Array<[string, string, string]>=[["⌂", "Home", "/"], ["⌕", "Explore", "/explore"], ["＋", "Create", "/create-post"], ["♡", "Likes", "/likes"], ["◉", "Profile", "/profile"]]
+
+const NavButton=({icon, label, to, active}:{icon:string, label:string, to:string, active:string})=>{
+  return <><Link to={to} className={`flex flex-col items-center gap-1 rounded-2xl px-3 py-2 text-sm font-semibold ${active === label ? "bg-slate-900 text-white" : "text-slate-600 hover:bg-white"}`}>
+    <Icon className={active === label ? "bg-white/10" : "bg-violet-50 text-violet-700"}>{icon}</Icon>
+    {label}
+  </Link></>
 }
