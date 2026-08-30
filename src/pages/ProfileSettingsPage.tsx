@@ -1,0 +1,9 @@
+import { AppShell } from "../components/AppShell";
+import { Avatar } from "../components/Avatar";
+import { PageHeader } from "../components/PageHeader";
+
+const fields = [["Display name", "Maya Morris"], ["Username", "mayamakes"], ["Bio", "Designing little moments of joy ✦"]];
+
+export function ProfileSettingsPage() {
+  return <AppShell active="Profile"><div className="mx-auto max-w-3xl"><PageHeader eyebrow="Account" title="Profile settings" description="Make your corner of Mosaic feel like home." /><section className="rounded-3xl border border-white bg-white/80 p-5 shadow-sm sm:p-8"><div className="flex items-center gap-5 border-b border-slate-100 pb-7"><Avatar name="Maya" image="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=240&q=80" size="xl" /><div><h2 className="text-lg font-bold">Maya Morris</h2><p className="text-sm text-slate-400">@mayamakes</p><button className="mt-3 rounded-xl bg-violet-50 px-4 py-2 text-sm font-bold text-violet-700">Change photo</button></div></div><div className="space-y-5 py-7">{fields.map(([label, value]) => <label key={label} className="block"><span className="mb-2 block text-sm font-bold">{label}</span>{label === "Bio" ? <textarea defaultValue={value} rows={4} className="w-full resize-none rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none focus:border-violet-400" /> : <input defaultValue={value} className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none focus:border-violet-400" />}</label>)}</div><div className="flex justify-end gap-3"><button className="rounded-xl px-5 py-3 text-sm font-bold text-slate-500">Cancel</button><button className="rounded-xl bg-slate-900 px-5 py-3 text-sm font-bold text-white">Save changes</button></div></section></div></AppShell>;
+}
