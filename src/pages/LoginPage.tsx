@@ -1,21 +1,13 @@
-import { useRef } from "react";
 import { AuthLayout } from "../components/AuthLayout";
 import { useFormStatus } from "react-dom";
 import { Link, useNavigate } from "react-router";
 
 export function LoginPage() {
-    const loginRef = useRef<HTMLFormElement>(null);
     const navigate = useNavigate();
-    //handlers
-    const handleSubmit = async () => {
-        const form = loginRef.current;
-        if (!form) return;
+    const handleSubmit = async (formData: FormData) => {
+        const email = formData.get("email");
+        const password = formData.get("password");
 
-        const formData = new FormData(form);
-        const userData = {
-            email: formData.get("email") as string,
-            password: formData.get("password") as string,
-        };
         try {
             const response = await fetch(
                 `${import.meta.env.VITE_BACKEND_URL}/auth/login`,
@@ -24,7 +16,7 @@ export function LoginPage() {
                     headers: {
                         "Content-Type": "application/json",
                     },
-                    body: JSON.stringify(userData),
+                    body: JSON.stringify({ email, password }),
                 },
             );
             const data = await response.json();
@@ -33,8 +25,6 @@ export function LoginPage() {
             }
         } catch (error) {
             console.error(error?.message || "An error occurred during login.");
-        } finally {
-            form.reset();
         }
     };
     return (
@@ -42,16 +32,11 @@ export function LoginPage() {
             title="Welcome back"
             subtitle="Your people and your inspiration are right where you left them."
         >
-            <form
-                className="mt-8 space-y-5"
-                action={handleSubmit}
-                ref={loginRef}
-            >
+            <form className="mt-8 space-y-5" action={handleSubmit}>
                 <label className="block text-sm font-bold">
                     Email address
                     <input
                         type="email"
-                        id="email"
                         name="email"
                         placeholder="hello@example.com"
                         className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 outline-none focus:border-violet-400"
@@ -62,7 +47,6 @@ export function LoginPage() {
                     <input
                         type="password"
                         name="password"
-                        id="password"
                         placeholder="••••••••"
                         className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 outline-none focus:border-violet-400"
                     />

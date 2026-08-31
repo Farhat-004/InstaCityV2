@@ -1,25 +1,17 @@
 import { useFormStatus } from "react-dom";
 import { AuthLayout } from "../components/AuthLayout";
-import { useRef } from "react";
 import { Link, useNavigate } from "react-router";
 
 export function RegisterPage() {
-    const formRef = useRef<HTMLFormElement>(null);
     const navigate = useNavigate();
 
-    //handlers
-    const handleSubmit = async () => {
-        const form = formRef.current;
-        if (!form) return;
-
-        const formData = new FormData(form);
+    const handleSubmit = async (formData: FormData) => {
         const userData = {
-            name: formData.get("fullName") as string,
-            email: formData.get("email") as string,
-            username: formData.get("username") as string,
-            password: formData.get("password") as string,
+            name: formData.get("fullName"),
+            email: formData.get("email"),
+            username: formData.get("username"),
+            password: formData.get("password"),
         };
-
         try {
             const response = await fetch(
                 `${import.meta.env.VITE_BACKEND_URL}/auth/signup`,
@@ -39,8 +31,6 @@ export function RegisterPage() {
         } catch (error) {
             console.error(error?.data?.message);
             console.error("An error occurred during registration.");
-        } finally {
-            form.reset();
         }
     };
     return (
@@ -48,17 +38,12 @@ export function RegisterPage() {
             title="Create your space"
             subtitle="A fresh page for all the pieces that make you, you."
         >
-            <form
-                className="mt-8 space-y-4"
-                ref={formRef}
-                action={handleSubmit}
-            >
+            <form className="mt-8 space-y-4" action={handleSubmit}>
                 <label className="block text-sm font-bold">
                     Full name
                     <input
                         placeholder="Your name"
                         name="fullName"
-                        id="fullName"
                         className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 outline-none focus:border-violet-400"
                     />
                 </label>
@@ -67,7 +52,6 @@ export function RegisterPage() {
                     <input
                         type="email"
                         name="email"
-                        id="email"
                         placeholder="hello@example.com"
                         className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 outline-none focus:border-violet-400"
                     />
@@ -77,7 +61,6 @@ export function RegisterPage() {
                     <input
                         placeholder="Choose a username"
                         name="username"
-                        id="username"
                         className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 outline-none focus:border-violet-400"
                     />
                 </label>
@@ -86,7 +69,6 @@ export function RegisterPage() {
                     <input
                         type="password"
                         name="password"
-                        id="password"
                         placeholder="Create a password"
                         className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 outline-none focus:border-violet-400"
                     />
