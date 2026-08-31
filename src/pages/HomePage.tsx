@@ -1,7 +1,8 @@
 import { PostCard, type Post } from "../components/PostCard";
 import { StoryStrip } from "../components/StoryStrip";
-
-const posts: Post[] = [
+import { useQuery } from "@tanstack/react-query";
+import { fetchPosts } from "../actions/script";
+const demoPosts: Post[] = [
     {
         author: "Aisha Rahman",
         handle: "@aishajournal",
@@ -23,6 +24,11 @@ const posts: Post[] = [
 ];
 
 export default function HomePage() {
+    const { isPending, error, data, isFetching, isLoading } = useQuery({
+        queryKey: ["posts"],
+        queryFn: () => fetchPosts(),
+    });
+    console.log("data", data);
     return (
         <div className="grid gap-8 xl:grid-cols-[minmax(0,680px)_300px]">
             <section>
@@ -43,47 +49,53 @@ export default function HomePage() {
                     <StoryStrip />
                 </div>
                 <div className="space-y-7">
-                    {posts.map((post) => (
+                    {demoPosts.map((post) => (
                         <PostCard key={post.author} post={post} />
                     ))}
                 </div>
             </section>
-            <aside className="hidden xl:block">
-                <div className="sticky top-8 space-y-6">
-                    <div className="rounded-3xl bg-slate-900 p-6 text-white shadow-xl shadow-slate-200">
-                        <p className="text-sm text-violet-200">
-                            Your weekly moodboard
-                        </p>
-                        <p className="mt-2 font-serif text-2xl font-bold">
-                            Make room for wonder.
-                        </p>
-                        <button className="mt-5 rounded-xl bg-white px-4 py-2 text-sm font-bold text-slate-900">
-                            Explore picks
-                        </button>
-                    </div>
-                    <div className="rounded-3xl border border-white bg-white/75 p-5">
-                        <div className="mb-4 flex justify-between">
-                            <h2 className="font-bold">Trending now</h2>
-                            <button className="text-xs font-bold text-fuchsia-600">
-                                See all
-                            </button>
-                        </div>
-                        {["#slowmornings", "#madebyhand", "#urbanescape"].map(
-                            (tag, i) => (
-                                <div
-                                    key={tag}
-                                    className="flex justify-between py-3 text-sm"
-                                >
-                                    <span className="font-semibold">{tag}</span>
-                                    <span className="text-slate-400">
-                                        {24 - i * 3 + "k posts"}
-                                    </span>
-                                </div>
-                            ),
-                        )}
-                    </div>
-                </div>
-            </aside>
+            <HomeAside />
         </div>
     );
 }
+
+const HomeAside = () => {
+    return (
+        <aside className="hidden xl:block">
+            <div className="sticky top-8 space-y-6">
+                <div className="rounded-3xl bg-slate-900 p-6 text-white shadow-xl shadow-slate-200">
+                    <p className="text-sm text-violet-200">
+                        Your weekly moodboard
+                    </p>
+                    <p className="mt-2 font-serif text-2xl font-bold">
+                        Make room for wonder.
+                    </p>
+                    <button className="mt-5 rounded-xl bg-white px-4 py-2 text-sm font-bold text-slate-900">
+                        Explore picks
+                    </button>
+                </div>
+                <div className="rounded-3xl border border-white bg-white/75 p-5">
+                    <div className="mb-4 flex justify-between">
+                        <h2 className="font-bold">Trending now</h2>
+                        <button className="text-xs font-bold text-fuchsia-600">
+                            See all
+                        </button>
+                    </div>
+                    {["#slowmornings", "#madebyhand", "#urbanescape"].map(
+                        (tag, i) => (
+                            <div
+                                key={tag}
+                                className="flex justify-between py-3 text-sm"
+                            >
+                                <span className="font-semibold">{tag}</span>
+                                <span className="text-slate-400">
+                                    {24 - i * 3 + "k posts"}
+                                </span>
+                            </div>
+                        ),
+                    )}
+                </div>
+            </div>
+        </aside>
+    );
+};
