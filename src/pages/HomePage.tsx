@@ -1,7 +1,7 @@
 import { PostCard, type Post } from "../components/PostCard";
 import { StoryStrip } from "../components/StoryStrip";
 import { useQuery } from "@tanstack/react-query";
-import { fetchPosts } from "../actions/script";
+import { fetchPosts } from "../actions/fetch/script";
 const demoPosts: Post[] = [
     {
         author: "Aisha Rahman",

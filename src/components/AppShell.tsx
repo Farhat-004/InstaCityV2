@@ -81,6 +81,8 @@ const navButtons: Array<[string, string, string]> = [
     ["⌕", "Explore", "/explore"],
     ["♡", "Likes", "/likes"],
     ["◉", "Profile", "/profile"],
+    ["◉", "Login", "/login"],
+    ["◉", "Register", "/register"],
 ];
 
 const NavButton = ({
