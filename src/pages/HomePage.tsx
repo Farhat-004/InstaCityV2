@@ -2,6 +2,11 @@ import { PostCard, type Post } from "../components/PostCard";
 import { StoryStrip } from "../components/StoryStrip";
 import { useQuery } from "@tanstack/react-query";
 import { fetchPosts } from "../actions/fetch/script";
+import { AuthContext } from "../contexts";
+import { useContext } from "react";
+import { Link } from "react-router";
+import ForceLogin from "../components/ForceLogin";
+import { formatLongDate } from "../actions/index";
 const demoPosts: Post[] = [
     {
         author: "Aisha Rahman",
@@ -24,21 +29,33 @@ const demoPosts: Post[] = [
 ];
 
 export default function HomePage() {
-    const { isPending, error, data, isFetching, isLoading } = useQuery({
+    const { user: userData } = useContext(AuthContext);
+
+    if (!userData) {
+        return <ForceLogin />;
+    }
+    const user = userData.user;
+    const {
+        isPending,
+        error,
+        data: posts,
+        isFetching,
+        isLoading,
+    } = useQuery({
         queryKey: ["posts"],
         queryFn: () => fetchPosts(),
     });
-    console.log("data", data);
+    console.log("user", user);
     return (
         <div className="grid gap-8 xl:grid-cols-[minmax(0,680px)_300px]">
             <section>
                 <header className="mb-7 flex items-end justify-between">
                     <div>
                         <p className="text-sm font-semibold text-fuchsia-600">
-                            Tuesday, August 30
+                            {formatLongDate()}
                         </p>
                         <h1 className="font-serif text-3xl font-bold">
-                            Good morning, Maya ✦
+                            Good morning, {user?.name || "Friend"} ✦
                         </h1>
                     </div>
                     <button className="rounded-2xl bg-white px-4 py-2 text-sm font-bold shadow-sm">

@@ -1,9 +1,12 @@
 import { AuthLayout } from "../components/AuthLayout";
 import { useFormStatus } from "react-dom";
 import { Link, useNavigate } from "react-router";
+import { AuthContext } from "../contexts";
+import { useContext } from "react";
 
 export function LoginPage() {
     const navigate = useNavigate();
+    const { setUser } = useContext(AuthContext);
     const handleSubmit = async (formData: FormData) => {
         const email = formData.get("email");
         const password = formData.get("password");
@@ -21,6 +24,7 @@ export function LoginPage() {
             );
             const data = await response.json();
             if (response.ok) {
+                setUser(data);
                 navigate("/");
             }
         } catch (error) {
