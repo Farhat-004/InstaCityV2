@@ -1,16 +1,20 @@
 import { useFormStatus } from "react-dom";
 import { AuthLayout } from "../components/AuthLayout";
 import { useRef } from "react";
+import { Link, useNavigate } from "react-router";
 
 export function RegisterPage() {
     const formRef = useRef<HTMLFormElement>(null);
+    const navigate = useNavigate();
+
+    //handlers
     const handleSubmit = async () => {
         const form = formRef.current;
         if (!form) return;
 
         const formData = new FormData(form);
         const userData = {
-            fullName: formData.get("fullName") as string,
+            name: formData.get("fullName") as string,
             email: formData.get("email") as string,
             username: formData.get("username") as string,
             password: formData.get("password") as string,
@@ -18,7 +22,7 @@ export function RegisterPage() {
 
         try {
             const response = await fetch(
-                `${import.meta.env.VITE_BACKEND_URL}/register`,
+                `${import.meta.env.VITE_BACKEND_URL}/auth/signup`,
                 {
                     method: "POST",
                     headers: {
@@ -29,11 +33,14 @@ export function RegisterPage() {
             );
             const data = await response.json();
             console.log("register Data", data);
-            return data;
+            if (response.ok) {
+                navigate("/login");
+            }
         } catch (error) {
-            console.error(
-                error?.message || "An error occurred during registration.",
-            );
+            console.error(error?.data?.message);
+            console.error("An error occurred during registration.");
+        } finally {
+            form.reset();
         }
     };
     return (
@@ -94,12 +101,13 @@ export function RegisterPage() {
                 <SubmitButton />
                 <p className="text-center text-sm text-slate-500">
                     Already have an account?{" "}
-                    <button
+                    <Link
+                        to={"/login"}
                         type="button"
                         className="font-bold text-fuchsia-600"
                     >
                         Sign in
-                    </button>
+                    </Link>
                 </p>
             </form>
         </AuthLayout>
