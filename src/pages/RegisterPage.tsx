@@ -32,8 +32,7 @@ export function RegisterPage() {
             return data;
         } catch (error) {
             console.error(
-                error?.data?.message ||
-                    "An error occurred during registration.",
+                error?.message || "An error occurred during registration.",
             );
         }
     };
