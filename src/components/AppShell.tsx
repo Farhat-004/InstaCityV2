@@ -1,8 +1,16 @@
+import { useContext } from "react";
 import { Avatar } from "./Avatar";
 import { Icon } from "./Icon";
-import { Link, Outlet } from "react-router";
-
-export default function AppShell({ active = "Home" }: { active?: string }) {
+import { Link, Outlet, useLocation } from "react-router";
+import { AuthContext } from "../contexts/index";
+export default function AppShell() {
+    const { auth } = useContext(AuthContext);
+    const currentPath = useLocation().pathname;
+    const navButtons: Array<[string, string, string]> = [
+        ["⌂", "Home", "/"],
+        ["◉", "Profile", `/profile/${auth?.user?._id}`],
+        ["◉", "Login", "/login"],
+    ];
     return (
         <div className="min-h-screen bg-[#f8f4ff] text-slate-800 selection:bg-fuchsia-200">
             <div className="fixed inset-0 -z-10 overflow-hidden">
@@ -24,18 +32,23 @@ export default function AppShell({ active = "Home" }: { active?: string }) {
                         <Link
                             to={path}
                             key={label}
-                            className={`flex w-full items-center gap-3 rounded-2xl px-3 py-2.5 text-left text-sm font-semibold ${active === label ? "bg-slate-900 text-white shadow-lg shadow-slate-300" : "text-slate-600 hover:bg-white"}`}
+                            className={`${currentPath === path ? "bg-slate-800 " : "bg-white "} flex w-full items-center gap-3 rounded-2xl px-3 py-2.5 text-left text-sm font-semibold dark:text-white shadow-lg shadow-slate-300  hover:bg-white"}`}
                         >
                             <Icon
                                 className={
-                                    active === label ? "bg-white/10" : (
+                                    currentPath === path ? "bg-white/10" : (
                                         "bg-violet-50 text-violet-700"
                                     )
                                 }
                             >
                                 {icon}
                             </Icon>
-                            {label}
+                            {/* {label} */}
+                            <span
+                                className={`${currentPath === path ? "text-white" : "text-slate-900"}`}
+                            >
+                                {label}
+                            </span>
                         </Link>
                     ))}
                 </nav>
@@ -52,8 +65,25 @@ export default function AppShell({ active = "Home" }: { active?: string }) {
                         size="sm"
                     />
                     <div>
-                        <p className="text-sm font-bold">Maya Morris</p>
-                        <p className="text-xs text-slate-400">@mayamakes</p>
+                        {auth?.user ?
+                            <Link
+                                to="/settings"
+                                className="text-sm font-bold text-violet-700 hover:underline"
+                            >
+                                <p className="text-sm font-bold">
+                                    {auth?.user?.name}
+                                </p>
+                                <p className="text-xs text-slate-400">
+                                    @mayamakes
+                                </p>
+                            </Link>
+                        :   <Link
+                                to="/login"
+                                className="text-sm font-bold text-violet-700 hover:underline"
+                            >
+                                Login
+                            </Link>
+                        }
                     </div>
                     <span className="ml-auto text-slate-400">•••</span>
                 </div>
@@ -68,7 +98,6 @@ export default function AppShell({ active = "Home" }: { active?: string }) {
                         icon={icon}
                         label={label}
                         to={path}
-                        active={active}
                     />
                 ))}
             </nav>
@@ -76,40 +105,21 @@ export default function AppShell({ active = "Home" }: { active?: string }) {
     );
 }
 
-const navButtons: Array<[string, string, string]> = [
-    ["⌂", "Home", "/"],
-    ["⌕", "Explore", "/explore"],
-    ["♡", "Likes", "/likes"],
-    ["◉", "Profile", "/profile"],
-    ["◉", "Login", "/login"],
-    ["◉", "Register", "/register"],
-];
-
 const NavButton = ({
     icon,
     label,
     to,
-    active,
 }: {
     icon: string;
     label: string;
     to: string;
-    active: string;
 }) => {
     return (
         <Link to={to}>
             <span
-                className={`flex flex-col items-center gap-1 rounded-2xl px-3 py-2 text-sm font-semibold ${active === label ? "bg-slate-900 text-white" : "text-slate-600 hover:bg-white"}`}
+                className={`flex flex-col items-center gap-1 rounded-2xl px-3 py-2 text-sm font-semibold bg-slate-900 dark:text-white text-slate-600 hover:bg-white"}`}
             >
-                <Icon
-                    className={
-                        active === label ? "bg-white/10" : (
-                            "bg-violet-50 text-violet-700"
-                        )
-                    }
-                >
-                    {icon}
-                </Icon>
+                <Icon className={"bg-white/10"}>{icon}</Icon>
                 {label}
             </span>
         </Link>
