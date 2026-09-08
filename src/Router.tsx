@@ -7,6 +7,9 @@ import { ProfileSettingsPage } from "./pages/ProfileSettingsPage";
 import AppShell from "./components/AppShell";
 import { LoginPage } from "./pages/LoginPage";
 import { RegisterPage } from "./pages/RegisterPage";
+import ErrorPage from "./pages/ErrorPage";
+import EditPost from "./pages/EditPost";
+import LogoutPage from "./pages/LogoutPage";
 
 const router = createBrowserRouter([
     {
@@ -14,14 +17,20 @@ const router = createBrowserRouter([
         element: <AppShell />,
         children: [
             { index: true, element: <HomePage /> },
-            { path: "explore", element: <PostDetailsPage /> },
+            { path: "post/:postId", element: <PostDetailsPage /> },
             { path: "create-post", element: <CreatePostPage /> },
             { path: "likes", element: <HomePage /> },
-            { path: "profile", element: <PersonProfilePage /> },
+            { path: "profile/:userId", element: <PersonProfilePage /> },
             { path: "settings", element: <ProfileSettingsPage /> },
             { path: "login", element: <LoginPage /> },
             { path: "register", element: <RegisterPage /> },
+            { path: "edit-post/:postId", element: <EditPost /> },
         ],
+        errorElement: <ErrorPage />,
+    },
+    {
+        path: "logout",
+        element: <LogoutPage />,
     },
 ]);
 

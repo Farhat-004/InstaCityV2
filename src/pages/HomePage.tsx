@@ -1,51 +1,51 @@
-import { PostCard, type Post } from "../components/PostCard";
-import { StoryStrip } from "../components/StoryStrip";
-import { useQuery } from "@tanstack/react-query";
+import { PostCard } from "../components/PostCard";
+import { useInfiniteQuery } from "@tanstack/react-query";
 import { fetchPosts } from "../actions/fetch/script";
 import { AuthContext } from "../contexts";
-import { useContext } from "react";
+import { useContext, useEffect, useRef } from "react";
+import { formatLongDate } from "../utils/index";
 import { Link } from "react-router";
-import ForceLogin from "../components/ForceLogin";
-import { formatLongDate } from "../actions/index";
-const demoPosts: Post[] = [
-    {
-        author: "Aisha Rahman",
-        handle: "@aishajournal",
-        avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=120&q=80",
-        image: "https://images.unsplash.com/photo-1497250681960-ef046c08a56e?auto=format&fit=crop&w=1000&q=85",
-        caption: "A little corner of green makes the whole room exhale. 🌿",
-        likes: "1,284",
-        time: "32 minutes ago",
-    },
-    {
-        author: "Nico Alvarez",
-        handle: "@nico.sees",
-        avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=120&q=80",
-        image: "https://images.unsplash.com/photo-1482192505345-5655af888cc4?auto=format&fit=crop&w=1000&q=85",
-        caption: "Find me where the map gets a little quieter.",
-        likes: "824",
-        time: "2 hours ago",
-    },
-];
-
 export default function HomePage() {
-    const { user: userData } = useContext(AuthContext);
-
-    if (!userData) {
-        return <ForceLogin />;
-    }
-    const user = userData.user;
+    const { auth } = useContext(AuthContext);
+    const user = auth?.user;
+    const pageSize = user ? 5 : 3;
+    const audience = user?._id ?? "guest";
+    const loadMoreRef = useRef<HTMLDivElement>(null);
     const {
-        isPending,
+        data,
         error,
-        data: posts,
-        isFetching,
-        isLoading,
-    } = useQuery({
-        queryKey: ["posts"],
-        queryFn: () => fetchPosts(),
+        fetchNextPage,
+        hasNextPage,
+        isFetchingNextPage,
+        isPending,
+    } = useInfiniteQuery({
+        queryKey: ["posts", audience, pageSize],
+        queryFn: ({ pageParam }) =>
+            fetchPosts({ page: pageParam, limit: pageSize }),
+        initialPageParam: 1,
+        getNextPageParam: (lastPage, _pages, lastPageParam) =>
+            user && lastPage.hasMore ? lastPageParam + 1 : undefined,
     });
-    console.log("user", user);
+    const posts = data?.pages.flatMap((page) => page.posts ?? []) ?? [];
+
+    useEffect(() => {
+        const target = loadMoreRef.current;
+        if (!target || !hasNextPage) return;
+
+        const observer = new IntersectionObserver(
+            ([entry]) => {
+                if (entry.isIntersecting && !isFetchingNextPage) {
+                    void fetchNextPage();
+                }
+            },
+            { rootMargin: "300px 0px", threshold: 0 },
+        );
+        observer.observe(target);
+        return () => observer.disconnect();
+    }, [fetchNextPage, hasNextPage, isFetchingNextPage]);
+
+    if (isPending) return <div>Loading posts...</div>;
+    if (error) return <div>Unable to load posts.</div>;
     return (
         <div className="grid gap-8 xl:grid-cols-[minmax(0,680px)_300px]">
             <section>
@@ -62,14 +62,32 @@ export default function HomePage() {
                         ⌕ Search
                     </button>
                 </header>
-                <div className="mb-7 rounded-3xl border border-white bg-white/60 p-5 shadow-sm">
+                {/* <div className="mb-7 rounded-3xl border border-white bg-white/60 p-5 shadow-sm">
                     <StoryStrip />
-                </div>
+                </div> */}
                 <div className="space-y-7">
-                    {demoPosts.map((post) => (
-                        <PostCard key={post.author} post={post} />
+                    {posts?.map((post) => (
+                        <PostCard key={post?._id} post={post} />
                     ))}
+                    {hasNextPage && (
+                        <div
+                            ref={loadMoreRef}
+                            className="py-4 text-center text-sm text-slate-400"
+                        >
+                            {isFetchingNextPage && "Loading more posts..."}
+                        </div>
+                    )}
                 </div>
+                {!user && (
+                    <p className="mt-8 text-center text-sm text-slate-500">
+                        <Link
+                            to="/login"
+                            className="font-semibold text-fuchsia-600 hover:underline"
+                        >
+                            Login to see more posts
+                        </Link>
+                    </p>
+                )}
             </section>
             <HomeAside />
         </div>

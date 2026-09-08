@@ -3,10 +3,13 @@ import { useFormStatus } from "react-dom";
 import { Link, useNavigate } from "react-router";
 import { AuthContext } from "../contexts";
 import { useContext } from "react";
-
+import { toast } from "react-toastify";
+import type { Auth } from "../utils/types";
 export function LoginPage() {
     const navigate = useNavigate();
-    const { setUser } = useContext(AuthContext);
+    const { setAuth } = useContext(AuthContext) as {
+        setAuth: (auth: Auth) => void;
+    };
     const handleSubmit = async (formData: FormData) => {
         const email = formData.get("email");
         const password = formData.get("password");
@@ -24,11 +27,33 @@ export function LoginPage() {
             );
             const data = await response.json();
             if (response.ok) {
-                setUser(data);
+                setAuth(data);
+                toast.success("Login successful!", {
+                    position: "top-center",
+                    autoClose: 3000,
+                    hideProgressBar: false,
+                    closeOnClick: true,
+                    pauseOnHover: true,
+                    draggable: true,
+                    progress: undefined,
+                    theme: "dark",
+                });
                 navigate("/");
             }
         } catch (error) {
-            console.error(error?.message || "An error occurred during login.");
+            toast.error(
+                (error as Error).message || "An error occurred during login.",
+                {
+                    position: "top-center",
+                    autoClose: 3000,
+                    hideProgressBar: false,
+                    closeOnClick: true,
+                    pauseOnHover: true,
+                    draggable: true,
+                    progress: undefined,
+                    theme: "dark",
+                },
+            );
         }
     };
     return (

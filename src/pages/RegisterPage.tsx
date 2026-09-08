@@ -23,13 +23,11 @@ export function RegisterPage() {
                     body: JSON.stringify(userData),
                 },
             );
-            const data = await response.json();
-            console.log("register Data", data);
+            await response.json();
             if (response.ok) {
                 navigate("/login");
             }
-        } catch (error) {
-            console.error(error?.data?.message);
+        } catch {
             console.error("An error occurred during registration.");
         }
     };

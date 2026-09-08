@@ -29,11 +29,12 @@ export async function uploadImageToCloudinary(file: File): Promise<string> {
   return result.secure_url;
   } catch (error) {
     console.error("Error uploading image to Cloudinary:", error);
+    throw error;
   }
 
 }   
 
-export const getDateDifferenceFromNow = (fromDate) => {
+export const getDateDifferenceFromNow = (fromDate: string): string => {
     // 1. Calculate difference in milliseconds
     const differenceMs = new Date().getTime() - new Date(fromDate).getTime();
 

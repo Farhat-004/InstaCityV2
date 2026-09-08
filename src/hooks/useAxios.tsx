@@ -1,6 +1,5 @@
 import { useEffect } from "react";
 import useAuth from "./useAuth";
-// @ts-ignore - axios is provided by the project dependency and the IDE type resolver is not picking it up
 import axios from "axios";
 // import { Bounce, toast } from "react-toastify";
 export default function useAxios() {
@@ -38,7 +37,11 @@ export default function useAxios() {
                         );
                         const { accessToken } = response.data;
 
-                        setAuth({ ...auth, accessToken });
+                        setAuth((currentAuth) =>
+                            currentAuth ?
+                                { ...currentAuth, accessToken }
+                            :   null,
+                        );
 
                         // Retry the original request with the new token
                         originalRequest.headers.Authorization = `Bearer ${accessToken}`;
@@ -46,7 +49,7 @@ export default function useAxios() {
                     } catch (error) {
                         console.error(
                             "Error refreshing token:",
-                            error?.message,
+                            error instanceof Error ? error.message : error,
                         );
                         // toast.error(error?.response?.data?.message, {
                         //     position: "top-center",
@@ -69,7 +72,7 @@ export default function useAxios() {
             api.interceptors.request.eject(requestInterceptor);
             api.interceptors.response.eject(responseInterceptor);
         };
-    }, [auth?.accessToken]);
+    }, [auth?.accessToken, setAuth, auth?.refreshToken]);
     return api;
 }
 

@@ -8,8 +8,11 @@ export default function AppShell() {
     const currentPath = useLocation().pathname;
     const navButtons: Array<[string, string, string]> = [
         ["⌂", "Home", "/"],
-        ["◉", "Profile", `/profile/${auth?.user?._id}`],
-        ["◉", "Login", "/login"],
+        [
+            "◉",
+            auth?.user?.name ? "Logout" : "Login",
+            auth?.user?.name ? "/logout" : "/login",
+        ],
     ];
     return (
         <div className="min-h-screen bg-[#f8f4ff] text-slate-800 selection:bg-fuchsia-200">
@@ -60,21 +63,22 @@ export default function AppShell() {
                 </Link>
                 <div className="mt-auto flex items-center gap-3 rounded-2xl bg-white p-3 shadow-sm">
                     <Avatar
-                        name="Maya"
-                        image="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=120&q=80"
+                        name={auth?.user?.name}
+                        image={auth?.user?.avatar}
+                        userId={auth?.user?._id}
                         size="sm"
                     />
                     <div>
                         {auth?.user ?
                             <Link
-                                to="/settings"
+                                to={`/profile/${auth?.user?._id}`}
                                 className="text-sm font-bold text-violet-700 hover:underline"
                             >
                                 <p className="text-sm font-bold">
                                     {auth?.user?.name}
                                 </p>
                                 <p className="text-xs text-slate-400">
-                                    @mayamakes
+                                    @{auth?.user?.username || "username"}
                                 </p>
                             </Link>
                         :   <Link
@@ -85,7 +89,6 @@ export default function AppShell() {
                             </Link>
                         }
                     </div>
-                    <span className="ml-auto text-slate-400">•••</span>
                 </div>
             </aside>
             <main className="mx-auto max-w-7xl px-4 py-5 lg:ml-64 lg:px-8 lg:py-8">

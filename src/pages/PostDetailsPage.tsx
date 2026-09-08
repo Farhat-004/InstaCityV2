@@ -1,86 +1,181 @@
+import { Link, useNavigate, useParams } from "react-router";
 import { Avatar } from "../components/Avatar";
-
-const comments = [
-    [
-        "Nico Alvarez",
-        "This makes me want to fill my apartment with plants immediately.",
-        "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=120&q=80",
-    ],
-    [
-        "Sara Kim",
-        "The light in this photo is perfection!",
-        "https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=120&q=80",
-    ],
-];
-
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import useFetchData from "../hooks/useFetchData";
+import { getDateDifferenceFromNow } from "../utils";
+import { useState } from "react";
+import usePostRequest from "../hooks/usePostData";
+import useAuth from "../hooks/useAuth";
+import { Liked, Unlike } from "../components/PostCard";
+import PostMenu from "../components/Post/PostMenu";
+import Comment from "../components/comment/Comment";
+import AddComment from "../components/comment/AddComment";
+import { toast } from "react-toastify";
+import type { Auth, Like, Post } from "../utils/types";
 export function PostDetailsPage() {
+    const { postId } = useParams();
+    const { auth } = useAuth() as {
+        auth: { user: Auth["user"] };
+    };
+    const { fetchPostById } = useFetchData();
+    const { ActionLike } = usePostRequest();
+    const navigate = useNavigate();
+    const queryClient = useQueryClient();
+    const [showMenu, setShowMenu] = useState(false);
+
+    //queries to post and fetch
+    const { isLoading, data: post } = useQuery<Post>({
+        queryKey: ["post", postId],
+        queryFn: () => fetchPostById(postId!),
+    });
+    const [isLiked, setIsLiked] = useState(
+        post?.likes.some((like: Like) => like?._id === auth?.user._id),
+    );
+
+    const { isPending: isLikeLoading, mutate: likePost } = useMutation({
+        mutationFn: () => ActionLike(postId!),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["post", postId] });
+            setIsLiked((prev) => !prev);
+        },
+        onError: (error) => {
+            console.error("Error liking the post:", error.message);
+        },
+    });
+    //handlers
+
+    const handleShareBtn = async () => {
+        const url = `${window.location.href}${"post/" + postId}`;
+
+        await navigator.clipboard.writeText(url);
+        alert("Post link copied in clipboard");
+    };
+
     return (
         <div className="mx-auto max-w-5xl">
-            <button className="mb-5 text-sm font-bold text-slate-500">
+            <button
+                onClick={() => navigate(-1)}
+                className="mb-5 text-sm font-bold text-slate-500"
+            >
                 ← Back to feed
             </button>
-            <article className="overflow-hidden rounded-3xl border border-white bg-white/85 shadow-xl shadow-violet-100 lg:grid lg:grid-cols-[1.1fr_.9fr]">
-                <img
-                    className="h-full min-h-80 w-full object-cover"
-                    src="https://images.unsplash.com/photo-1497250681960-ef046c08a56e?auto=format&fit=crop&w=1200&q=85"
-                    alt="Plants in a warm room"
-                />
-                <div className="flex min-h-[580px] flex-col p-6">
-                    <header className="flex items-center gap-3 border-b border-slate-100 pb-5">
-                        <Avatar
-                            name="Aisha"
-                            image="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=120&q=80"
-                            size="sm"
-                        />
-                        <div>
-                            <p className="text-sm font-bold">Aisha Rahman</p>
-                            <p className="text-xs text-slate-400">
-                                @aishajournal · 32m
-                            </p>
-                        </div>
-                        <button className="ml-auto text-lg text-slate-400">
-                            •••
-                        </button>
-                    </header>
-                    <div className="py-5 text-sm leading-6">
-                        <span className="font-bold">Aisha Rahman</span> A little
-                        corner of green makes the whole room exhale. 🌿
-                    </div>
-                    <div className="space-y-5">
-                        {comments.map(([name, comment, image]) => (
-                            <div key={name} className="flex gap-3">
-                                <Avatar name={name} image={image} size="sm" />
-                                <p className="pt-1 text-sm leading-6">
-                                    <span className="font-bold">{name} </span>
-                                    {comment}
-                                    <br />
-                                    <button className="text-xs font-bold text-slate-400">
-                                        Reply
-                                    </button>
+            {isLoading ?
+                <p>Loading...</p>
+            :   <article className="overflow-hidden rounded-3xl border border-white bg-white/85 shadow-xl shadow-violet-100 lg:grid lg:grid-cols-[1.1fr_.9fr]">
+                    <img
+                        className="h-full min-h-80 w-full object-cover"
+                        src={post?.image}
+                        alt={post?.caption}
+                    />
+                    <div className="flex min-h-[580px] flex-col p-6">
+                        <header className="flex items-center gap-3 border-b border-slate-100 pb-5">
+                            <Avatar
+                                name={post?.author?.name}
+                                image={post?.author?.avatar}
+                                userId={post?.author?._id}
+                                size="sm"
+                            />
+                            <div>
+                                <Link
+                                    to={`/profile/${post?.author?._id}`}
+                                    className="text-sm font-bold"
+                                >
+                                    {post?.author?.name}
+                                </Link>
+                                <p className="text-xs text-slate-400">
+                                    @
+                                    {post?.author?.name
+                                        .split(" ")[0]
+                                        .toLowerCase() || "username"}{" "}
+                                    ·
+                                    {getDateDifferenceFromNow(
+                                        post?.createdAt ?? "",
+                                    )}
                                 </p>
                             </div>
-                        ))}
-                    </div>
-                    <div className="mt-auto border-t border-slate-100 pt-5">
-                        <div className="flex gap-4 text-xl">
-                            <button>♡</button>
-                            <button>◌</button>
-                            <button>↗</button>
-                            <button className="ml-auto">♧</button>
+                            {auth?.user?._id === post?.author?._id && (
+                                <div className="relative ml-auto">
+                                    {post?.author._id == auth?.user?._id && (
+                                        <button
+                                            onClick={() =>
+                                                setShowMenu(!showMenu)
+                                            }
+                                            className="rounded-full px-2 text-lg leading-none text-slate-400 transition hover:bg-slate-100 hover:text-slate-600"
+                                            aria-label="Post options"
+                                        >
+                                            •••
+                                        </button>
+                                    )}
+                                    {showMenu && (
+                                        <PostMenu postId={post?._id} />
+                                    )}
+                                </div>
+                            )}
+                        </header>
+                        <div className="py-5 text-sm leading-6">
+                            <span className="font-bold">
+                                {post?.author?.name}
+                            </span>{" "}
+                            {post?.caption}
+                            🌿
                         </div>
-                        <p className="mt-3 text-sm font-bold">1,284 likes</p>
-                        <div className="mt-4 flex gap-2">
-                            <input
-                                placeholder="Add a comment…"
-                                className="min-w-0 flex-1 rounded-xl bg-slate-100 px-4 py-2.5 text-sm outline-none"
-                            />
-                            <button className="font-bold text-fuchsia-600">
-                                Post
-                            </button>
+                        {/* //comments section */}
+                        <div className="space-y-1">
+                            {post?.commentsCount == 0 ?
+                                <p className="text-sm text-slate-500">
+                                    No Comments
+                                </p>
+                            :   <p className="text-sm text-slate-500">
+                                    All Comments :
+                                </p>
+                            }
+                            {post?.comments.map((comment) => (
+                                <Comment
+                                    key={comment._id}
+                                    comment={comment}
+                                    postId={post._id}
+                                />
+                            ))}
+                        </div>
+                        <div className="mt-auto border-t border-slate-100 pt-5">
+                            <div className="flex gap-4 text-xl">
+                                <button
+                                    onClick={() => {
+                                        if (!auth?.user) {
+                                            toast(
+                                                "Please login to like the post",
+                                                {
+                                                    position: "top-center",
+                                                    theme: "dark",
+                                                },
+                                            );
+                                            return;
+                                        }
+                                        likePost();
+                                    }}
+                                    disabled={isLikeLoading}
+                                >
+                                    {isLiked ?
+                                        <Liked />
+                                    :   <Unlike />}
+                                </button>
+
+                                <button
+                                    onClick={handleShareBtn}
+                                    className="rounded-lg bg-violet-50 px-3 py-1 text-sm font-semibold text-violet-700 transition hover:bg-violet-100"
+                                >
+                                    Share
+                                </button>
+                            </div>
+                            <p className="mt-3 text-sm font-bold">
+                                {post?.likesCount} likes
+                            </p>
+                            {/* Add Comment */}
+                            <AddComment postId={post?._id} />
                         </div>
                     </div>
-                </div>
-            </article>
+                </article>
+            }
         </div>
     );
 }

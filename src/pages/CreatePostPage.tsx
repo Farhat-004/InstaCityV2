@@ -1,13 +1,16 @@
-import { useContext, useState } from "react";
+import { useState } from "react";
 import ForceLogin from "../components/ForceLogin";
 import { PageHeader } from "../components/PageHeader";
-import { AuthContext } from "../contexts";
 import { uploadImageToCloudinary } from "../utils";
 import useAxios from "../hooks/useAxios";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router";
+import type { Auth } from "../utils/types";
+import useAuth from "../hooks/useAuth";
 export default function CreatePostPage() {
-    const { auth } = useContext(AuthContext);
+    const { auth } = useAuth() as {
+        auth: { user: Auth["user"] };
+    };
     const queryClient = useQueryClient();
     const api = useAxios();
     const navigate = useNavigate();
@@ -53,7 +56,6 @@ export default function CreatePostPage() {
             image: fileData,
         }));
         setImageURL(URL.createObjectURL(fileData));
-        console.log("Selected file:", fileData);
     };
 
     async function handlePost() {
@@ -61,17 +63,21 @@ export default function CreatePostPage() {
             throw new Error("Please select an image for your post.");
         }
         const uploadedImageUrl = await uploadImageToCloudinary(post.image);
-        const response = await api.post(
-            `${import.meta.env.VITE_BACKEND_URL}/posts`,
-            {
-                caption: post.caption,
-                image: uploadedImageUrl,
-            },
-        );
-        console.log("Post created successfully:", response.data);
-        setPost({ caption: "", image: null });
-        setImageURL(null);
-        return response.data;
+        try {
+            const response = await api.post(
+                `${import.meta.env.VITE_BACKEND_URL}/posts`,
+                {
+                    caption: post.caption,
+                    image: uploadedImageUrl,
+                },
+            );
+            setPost({ caption: "", image: null });
+            setImageURL(null);
+            return response.data;
+        } catch (error) {
+            console.error("Error creating the post:", error);
+            throw error;
+        }
     }
     return (
         <div className="mx-auto max-w-4xl">
