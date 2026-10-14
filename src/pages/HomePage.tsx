@@ -44,8 +44,6 @@ export default function HomePage() {
         return () => observer.disconnect();
     }, [fetchNextPage, hasNextPage, isFetchingNextPage]);
 
-    if (isPending) return <div>Loading posts...</div>;
-    if (error) return <div>Unable to load posts.</div>;
     return (
         <div className="grid gap-8 xl:grid-cols-[minmax(0,680px)_300px]">
             <section>
@@ -55,7 +53,7 @@ export default function HomePage() {
                             {formatLongDate()}
                         </p>
                         <h1 className="font-serif text-3xl font-bold">
-                            Good morning, {user?.name || "Friend"} ✦
+                            Greetings!, {user?.name || "Friend"}
                         </h1>
                     </div>
                     <button className="rounded-2xl bg-white px-4 py-2 text-sm font-bold shadow-sm">
@@ -65,7 +63,11 @@ export default function HomePage() {
                 {/* <div className="mb-7 rounded-3xl border border-white bg-white/60 p-5 shadow-sm">
                     <StoryStrip />
                 </div> */}
+                {/*   post List  starts here*/}
+
                 <div className="space-y-7">
+                    {isPending && <div>Loading posts...</div>}
+                    {error && <div>Unable to load posts.</div>}
                     {posts?.map((post) => (
                         <PostCard key={post?._id} post={post} />
                     ))}
